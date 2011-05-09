@@ -12,7 +12,7 @@ function addTrackPlay(request, response) {
     var jsonCallback = urlObj.query["callback"];
     db.addTrackPlay(urlObj.query, function(trackId, playId) {
     	response.writeHead(200, {'Content-Type': 'text/javascript'});
-		response.write(jsonCallback +'({"trackId":'+ trackId +', "playId": '+ playId +'})');
+		response.write(jsonCallback +'({"trackId":'+ trackId +', "playId": '+ playId +'});');
 		response.end();
     });
 }

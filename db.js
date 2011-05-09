@@ -90,7 +90,8 @@ function addTrackPlay(trackData, callback) {
 			createArtist(trackData["artist"], function(artistId) {
 				createAlbum(artistId, trackData["album"], function(albumId) {
 					createTrack(artistId, albumId, trackData["title"], function(trackId) {
-						createTrackPlay(trackData["id"], trackId, userId, roomId, new Date(trackData["timestamp"]), function(playId) {
+						var timestamp = Math.floor(parseInt(trackData["timestamp"]) / 1000);
+						createTrackPlay(trackData["id"], trackId, userId, roomId, timestamp, function(playId) {
 							callback(trackId, playId);
 						});
 					});
