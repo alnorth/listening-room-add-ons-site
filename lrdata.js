@@ -1,11 +1,7 @@
 var clutch = require('clutch');
 var url = require('url');
 var db = require('./db');
-
-function helloSomeone(request, response, name) {
-    response.writeHead(200, {'Content-Type': 'text/plain'});
-    response.end('Hello '+name+'!\n');
-}
+var v1api = require('./v1api');
 
 function addTrackPlay(request, response) {
     var urlObj = url.parse(request.url, true);
@@ -22,5 +18,10 @@ function getTrackImage(request, response, id) {
 	response.end();
 }
 
+function v1ApiCall(request, response, pagename) {
+	v1api.call(request, response, pagename);
+}
+
 exports.urls = clutch.route404([['GET /addtrackplay/$', addTrackPlay],
-                                ['GET /trackimage/(\\d+)/$', getTrackImage]]);
+                                ['GET /trackimage/(\\d+)/$', getTrackImage],
+								['GET /v1/(\\w+)\.json$', getTrackImage]]);
