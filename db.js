@@ -60,7 +60,7 @@ function createAlbum(artistId, name, callback) {
 	}
 }
 
-function createTrack(artistId, albumId, name, callback) {
+function createTrack(artistId, name, callback) {
 	upsert("INSERT IGNORE INTO TRACK(artist_id, name) VALUES(?, ?);",
 		[artistId, name],
 		"SELECT id FROM TRACK WHERE artist_id = ? AND name = ?;",
