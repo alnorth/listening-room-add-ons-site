@@ -69,7 +69,7 @@ function createTrack(artistId, name, callback) {
 }
 
 function createTrackPlay(lrId, trackId, userId, roomId, albumId, played, callback) {
-	upsert("INSERT IGNORE INTO TRACK_PLAY(lr_id, track_id, user_id, room_id, album_id, played) VALUES(?, ?, ?, ?, ?, ?);",
+	upsert("INSERT IGNORE INTO TRACK_PLAY(lr_id, track_id, user_id, room_id, album_id, played) VALUES(?, ?, ?, ?, ?, FROM_UNIXTIME(?));",
 		[lrId, trackId, userId, roomId, albumId, played],
 		"SELECT id FROM TRACK_PLAY WHERE lr_id = ?;",
 		[lrId],
@@ -91,10 +91,10 @@ function addTrackPlay(trackData, ip, callback) {
 				createAlbum(artistId, trackData["album"], function(albumId) {
 					createTrack(artistId, trackData["title"], function(trackId) {
 						var timestamp = Math.floor(parseInt(trackData["timestamp"]) / 1000);
-						createTrackPlay(trackData["id"], trackId, userId, roomId, timestamp, function(playId) {
+						createTrackPlay(trackData["id"], trackId, userId, roomId, albumId, timestamp, function(playId) {
 							createUser(trackData["reportedByUserId"], trackData["reportedByUser"], function(reportedByUserId) {
 								createTrackPlayReport(playId, reportedByUserId, ip, function(reportId) {
-									callback(trackId, playId);
+									callback(trackId, playId, undefined);
 								});
 							});
 						});
