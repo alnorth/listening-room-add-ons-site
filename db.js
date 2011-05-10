@@ -12,9 +12,11 @@ client.connect();
 
 function upsert(insertQuery, insertData, selectQuery, selectData, callback) {
 	client.query(insertQuery, insertData, function(err, info) {
+		if(err) {console.log(err)};
 		if(info.insertId == 0) {
 			// The value was already in the database, and so no insert occurred.
 			client.query(selectQuery, selectData, function(err, results, fields) {
+				if(err) {console.log(err)};
 				callback(results[0]["id"]);
 			});
 		} else {
@@ -34,9 +36,11 @@ function createRoom(name, callback) {
 
 function createUser(lrId, name, callback) {
 	client.query("INSERT IGNORE INTO USER(lr_id, username) VALUES(?, ?);", [lrId, name], function(err, info) {
+		if(err) {console.log(err)};
 		if(info.insertId == 0) {
 			// The value was already in the database, and so no insert occurred.
 			client.query("SELECT id, username FROM USER WHERE lr_id = ?;", [lrId], function(err, results, fields) {
+				if(err) {console.log(err)};
 				// We don't always get sent the user name, so it could be NULL in the DB
 				if(!results[0]["username"] && name) {
 					client.query("UPDATE USER SET username = ? WHERE lr_id = ?;", [name, lrId]);
@@ -59,7 +63,7 @@ function createArtist(name, callback) {
 }
 
 function createAlbum(artistId, name, callback) {
-	if(name && name != "" && name != null) {
+	if(name && name != "" && name != "null") {
 		upsert("INSERT IGNORE INTO ALBUM(artist_id, name) VALUES(?, ?);",
 			[artistId, name],
 			"SELECT id FROM ALBUM WHERE artist_id = ? AND name = ?;",
