@@ -109,7 +109,7 @@ function addTrackPlay(trackData, ip, callback) {
 							createTrackPlay(trackData["id"], trackId, userId, roomId, albumId, timestamp, function(playId) {
 								createUser(trackData["reportedByUserId"], trackData["reportedByUser"], function(reportedByUserId) {
 									createTrackPlayReport(playId, reportedByUserId, ip, function(reportId) {
-										callback(trackId, playId, undefined);
+										callback(trackId, artistId, playId, undefined);
 									});
 								});
 							});
