@@ -59,7 +59,7 @@ function createArtist(name, callback) {
 }
 
 function createAlbum(artistId, name, callback) {
-	if(name && name != "") {
+	if(name && name != "" && name != null) {
 		upsert("INSERT IGNORE INTO ALBUM(artist_id, name) VALUES(?, ?);",
 			[artistId, name],
 			"SELECT id FROM ALBUM WHERE artist_id = ? AND name = ?;",
