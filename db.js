@@ -76,15 +76,15 @@ function createTrackPlay(lrId, trackId, userId, roomId, albumId, played, callbac
 		callback);
 }
 
-function createTrackPlayReport(playId, userId, callback) {
-	upsert("INSERT IGNORE INTO TRACK_PLAY_REPORT(play_id, user_id) VALUES(?, ?);",
-		[playId, userId],
+function createTrackPlayReport(playId, userId, ip, callback) {
+	upsert("INSERT IGNORE INTO TRACK_PLAY_REPORT(play_id, user_id, ip) VALUES(?, ?, ?);",
+		[playId, userId, ip],
 		"SELECT id FROM TRACK_PLAY_REPORT WHERE play_id = ? AND user_id = ?;",
 		[playId, userId],
 		callback);
 }
 
-function addTrackPlay(trackData, callback) {
+function addTrackPlay(trackData, ip, callback) {
 	createRoom(trackData["room"], function(roomId) {
 		createUser(trackData["userId"], trackData["user"], function(userId) {
 			createArtist(trackData["artist"], function(artistId) {
@@ -93,7 +93,7 @@ function addTrackPlay(trackData, callback) {
 						var timestamp = Math.floor(parseInt(trackData["timestamp"]) / 1000);
 						createTrackPlay(trackData["id"], trackId, userId, roomId, timestamp, function(playId) {
 							createUser(trackData["reportedByUserId"], trackData["reportedByUser"], function(reportedByUserId) {
-								createTrackPlayReport(playId, reportedByUserId, function(reportId) {
+								createTrackPlayReport(playId, reportedByUserId, ip, function(reportId) {
 									callback(trackId, playId);
 								});
 							});

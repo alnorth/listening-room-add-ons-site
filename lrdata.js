@@ -6,7 +6,7 @@ var v1api = require('./v1api');
 function addTrackPlay(request, response) {
     var urlObj = url.parse(request.url, true);
     var jsonCallback = urlObj.query["callback"];
-    db.addTrackPlay(urlObj.query, function(trackId, playId) {
+    db.addTrackPlay(urlObj.query, request.connection.remoteAddress, function(trackId, playId) {
     	response.writeHead(200, {'Content-Type': 'text/javascript'});
 		response.write(jsonCallback +'({"trackId":'+ trackId +', "playId": '+ playId +'});');
 		response.end();
