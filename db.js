@@ -103,7 +103,7 @@ function checkParam(trackData, name) {
 }
 
 function addTrackPlay(trackData, ip, callback) {
-	if(checkParam("room") && checkParam("userId") && checkParam("artist") && checkParam("title") && checkParam("timestamp") && checkParam("reportedByUserId")) {
+	if(checkParam(trackData, "room") && checkParam(trackData, "userId") && checkParam(trackData, "artist") && checkParam(trackData, "title") && checkParam(trackData, "timestamp") && checkParam(trackData, "reportedByUserId")) {
 		createRoom(trackData["room"], function(roomId) {
 			createUser(trackData["userId"], trackData["user"], function(userId) {
 				createArtist(trackData["artist"], function(artistId) {
