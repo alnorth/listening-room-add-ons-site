@@ -98,8 +98,12 @@ function createTrackPlayReport(playId, userId, ip, callback) {
 		callback);
 }
 
+function checkParam(name) {
+	return trackData[name] && trackData[name] != "";
+}
+
 function addTrackPlay(trackData, ip, callback) {
-	if(trackData["artist"] && trackData["artist"] != "" && trackData["title"] && trackData["title"] != "") {
+	if(checkParam("room") && checkParam("userId") && checkParam("artist") && checkParam("title") && checkParam("timestamp") && checkParam("reportedByUserId")) {
 		createRoom(trackData["room"], function(roomId) {
 			createUser(trackData["userId"], trackData["user"], function(userId) {
 				createArtist(trackData["artist"], function(artistId) {
@@ -119,7 +123,7 @@ function addTrackPlay(trackData, ip, callback) {
 			});
 		});
 	} else {
-		callback(undefined, undefined, "Artist and track not supplied");
+		callback(0, 0, 0, undefined);
 	}
 }
 exports.addTrackPlay = addTrackPlay;
