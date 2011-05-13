@@ -6,6 +6,7 @@ var v1api = require('./v1api');
 function addTrackPlay(request, response) {
     var urlObj = url.parse(request.url, true);
     var jsonCallback = urlObj.query["callback"];
+    try {
     db.addTrackPlay(urlObj.query, request.connection.remoteAddress, function(trackId, artistId, playId, err) {
     	response.writeHead(200, {'Content-Type': 'text/javascript'});
     	if(err) {
@@ -13,8 +14,11 @@ function addTrackPlay(request, response) {
     	} else {
     		response.write(jsonCallback +'({"trackId":'+ trackId +', "artistId":'+ artistId +', "playId": '+ playId +'});');
     	}
-		response.end();
+	response.end();
     });
+    } catch (err) {
+        response.write(jsonCallback +'({"trackId":0, "artistId":0, "playId":0});');
+    }
 }
 
 function getTrackImage(request, response, id) {
