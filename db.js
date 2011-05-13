@@ -98,7 +98,7 @@ function createTrackPlayReport(playId, userId, ip, callback) {
 		callback);
 }
 
-function checkParam(name) {
+function checkParam(trackData, name) {
 	return trackData[name] && trackData[name] != "";
 }
 
