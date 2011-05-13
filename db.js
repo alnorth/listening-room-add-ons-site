@@ -105,7 +105,7 @@ function addTrackPlay(trackData, ip, callback) {
 				createArtist(trackData["artist"], function(artistId) {
 					createAlbum(artistId, trackData["album"], function(albumId) {
 						createTrack(artistId, trackData["title"], function(trackId) {
-							var timestamp = Math.floor(parseInt(trackData["timestamp"]) / 1000);
+							var timestamp = parseInt(trackData["timestamp"].substring(0, trackData["timestamp"].length));
 							createTrackPlay(trackData["id"], trackId, userId, roomId, albumId, timestamp, function(playId) {
 								createUser(trackData["reportedByUserId"], trackData["reportedByUser"], function(reportedByUserId) {
 									createTrackPlayReport(playId, reportedByUserId, ip, function(reportId) {
