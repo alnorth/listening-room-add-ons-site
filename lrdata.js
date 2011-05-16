@@ -24,4 +24,4 @@ function v1ApiCall(request, response, pagename) {
 
 exports.urls = clutch.route404([['GET /addtrackplay/$', addTrackPlay],
                                 ['GET /trackimage/(\\d+)/$', getTrackImage],
-								['GET /v1/(\\w+)\.json$', getTrackImage]]);
+								['GET /v1/(\\w+)\.json$', v1ApiCall]]);
