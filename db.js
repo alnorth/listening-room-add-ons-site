@@ -35,6 +35,9 @@ function createRoom(name, callback) {
 }
 
 function createUser(lrId, name, callback) {
+	if(name == "") {
+		name = undefined;
+	}
 	client.query("INSERT IGNORE INTO USER(lr_id, username) VALUES(?, ?);", [lrId, name], function(err, info) {
 		if(err) {console.log(err)};
 		if(info.insertId == 0) {
@@ -42,7 +45,7 @@ function createUser(lrId, name, callback) {
 			client.query("SELECT id, username FROM USER WHERE lr_id = ?;", [lrId], function(err, results, fields) {
 				if(err) {console.log(err)};
 				// We don't always get sent the user name, so it could be NULL in the DB
-				if(!results[0] && name) {
+				if(!results[0]["username"] && name) {
 					client.query("UPDATE USER SET username = ? WHERE lr_id = ?;", [name, lrId]);
 				}
 				callback(results[0]["id"]);
