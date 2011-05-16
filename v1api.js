@@ -1,4 +1,5 @@
 var url = require('url');
+var db = require('./db');
 
 function call(request, response, pagename) {
 	var urlObj = url.parse(request.url, true);
@@ -17,9 +18,9 @@ function call(request, response, pagename) {
 		fields = fields.substring(0, fields.length - 2); // Remove the last comma
 	
 		var joins = " FROM TRACK_PLAY p JOIN ROOM r ON r.id = p.room_id ";
-		if(fieldsData.fields.u) {joins += "JOIN USER u ON u.id = p.user_id ";}
-		if(fieldsData.fields.t || fieldsData.fields.art) {joins += "JOIN TRACK t ON t.id = p.track_id ";}
-		if(fieldsData.fields.art) {joins += "JOIN ARTIST art ON art.id = t.artist_id ";}
+		if(pagename == "user" || fieldsData.fields.u) {joins += "JOIN USER u ON u.id = p.user_id ";}
+		if(pagename == "track" || fieldsData.fields.t || fieldsData.fields.art) {joins += "JOIN TRACK t ON t.id = p.track_id ";}
+		if(pagename == "artist" || pagename == "track" || fieldsData.fields.art) {joins += "JOIN ARTIST art ON art.id = t.artist_id ";}
 		
 		var whereClauses = [];
 		var whereParams = [];
@@ -61,6 +62,7 @@ function call(request, response, pagename) {
 		for(var i = 0; i < whereClauses.length; i++) {
 			where += whereClauses[i];
 			where += " AND ";
+			params.push(whereParams[i]);
 		}
 		where = where.substring(0, where.length - 5); // Remove the last " AND "
 	
@@ -84,14 +86,36 @@ function call(request, response, pagename) {
 		} else {
 			order += fieldsData.default_ordering;
 		}
+		order += " ";
 		
-		//Limit/offset
+		var limit = "LIMIT ?, ? ";
+		if(checkParam(urlObj, "offset")) {
+			params.push(urlObj.query["offset"]);
+		} else {
+			params.push(0);
+		}
+		if(checkParam(urlObj, "limit")) {
+			params.push(urlObj.query["limit"]);
+		} else {
+			params.push(200);
+		}
 	
-		var sql = fields + joins + where + group + order;
+		var sql = fields + joins + where + group + order + limit;
 		
-		response.writeHead(200, {'Content-Type': 'text/javascript'});
-    	response.write(sql);
-		response.end();
+		db.query(sql, params, function(err, results, fields) {
+			if(err) {console.log(err)};
+			
+			response.writeHead(200, {'Content-Type': 'text/javascript'});
+			var resultString = JSON.stringify(results);
+			if(checkParam(urlObj, "callback")) {
+				response.write(urlObj.query["callback"] + "(" + resultString + ");");
+			} else {
+				response.write(resultString);
+			}
+			response.end();
+		});
+		
+		
 	} else {
 		response.writeHead(400, {'Content-Type': 'text/javascript'});
     	response.write('Parameters missing. See API documentation for details.');
@@ -192,5 +216,7 @@ function checkRequiredParams(pagename, urlObj) {
 		}
 	}
 	return false;
+	
+	// Check that parameters that should be integers are integers
 }
 

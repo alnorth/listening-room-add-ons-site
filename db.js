@@ -10,6 +10,10 @@ client.password = config.dbpassword;
 
 client.connect();
 
+exports.query = function(sql, data, callback) {
+	client.query(sql, data, callback);
+}
+
 function upsert(insertQuery, insertData, selectQuery, selectData, callback) {
 	client.query(insertQuery, insertData, function(err, info) {
 		if(err) {console.log(err)};
