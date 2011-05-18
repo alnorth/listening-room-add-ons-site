@@ -109,20 +109,27 @@ function checkParam(trackData, name) {
 	return trackData[name] && trackData[name] != "";
 }
 
+function addTrack(trackData, callback) {
+	createArtist(trackData["artist"], function(artistId) {
+		createAlbum(artistId, trackData["album"], function(albumId) {
+			createTrack(artistId, trackData["title"], function(trackId) {
+				callback(trackId, artistId, albumId);
+			});
+		});
+	});
+}
+exports.addTrack = addTrack;
+
 function addTrackPlay(trackData, ip, callback) {
 	if(checkParam(trackData, "room") && checkParam(trackData, "userId") && checkParam(trackData, "artist") && checkParam(trackData, "title") && checkParam(trackData, "timestamp") && checkParam(trackData, "reportedByUserId")) {
 		createRoom(trackData["room"], function(roomId) {
 			createUser(trackData["userId"], trackData["user"], function(userId) {
-				createArtist(trackData["artist"], function(artistId) {
-					createAlbum(artistId, trackData["album"], function(albumId) {
-						createTrack(artistId, trackData["title"], function(trackId) {
-							var timestamp = Math.floor(parseInt(trackData["timestamp"]) / 1000);
-							createTrackPlay(trackData["id"], trackId, userId, roomId, albumId, timestamp, function(playId) {
-								createUser(trackData["reportedByUserId"], trackData["reportedByUser"], function(reportedByUserId) {
-									createTrackPlayReport(playId, reportedByUserId, ip, function(reportId) {
-										callback(trackId, artistId, playId, undefined);
-									});
-								});
+				addTrack(trackData, function(trackId, artistId, albumId) {
+					var timestamp = Math.floor(parseInt(trackData["timestamp"]) / 1000);
+					createTrackPlay(trackData["id"], trackId, userId, roomId, albumId, timestamp, function(playId) {
+						createUser(trackData["reportedByUserId"], trackData["reportedByUser"], function(reportedByUserId) {
+							createTrackPlayReport(playId, reportedByUserId, ip, function(reportId) {
+								callback(trackId, artistId, playId, undefined);
 							});
 						});
 					});
