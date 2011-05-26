@@ -3,10 +3,11 @@
 ##Installation
 The website is written in JavaScript and run in Node.js. Instructions for installation of Node can be found at http://nodejs.org/.
 
-This depends upon the following modules. You need to install these via npm (http://npmjs.org/).
+This depends upon the following modules. You need to install these via npm (http://npmjs.org/). I installed them all locally rather than globally.
 
- * clutch (npm install clutch). I couldn't get this to work when install globally, so I installed it locally instead.
+ * clutch (npm install clutch).
  * mysql (npm install mysql). Of course you'll also need to set up a mysql server and a database with a user and enter the right values in config.js.
+ * request (npm install mysql).
 
 ##License
 

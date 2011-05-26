@@ -63,8 +63,14 @@ exports.LastFM = function LastFM(options){
         }
 
         function dataHandler(response) {
+            var data = "";
             response.setEncoding('utf8');
-            response.on('data', function(data) {
+            response.on('data', function(chunk) {
+                if (response.statusCode == 200 && typeof(data.error) === 'undefined') {
+                    data += chunk;
+                }
+            });
+            response.on('end', function() {
                 var statusCode = response.statusCode;
                 if (statusCode != 200) {
                     if(callbacks && (typeof(callbacks.error) === 'function')){
