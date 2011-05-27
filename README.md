@@ -9,6 +9,7 @@ This depends upon the following modules. You need to install these via npm (http
  * mysql (npm install mysql). Of course you'll also need to set up a mysql server and a database with a user and enter the right values in config.js.
  * request (npm install request).
  * imagemagick (npm install request). You will also need to install the actual imagemagick libraries for your platform too, see http://www.imagemagick.org/script/binary-releases.php.
+ * mkdirp (npm install request).
 
 ##License
 

@@ -5,6 +5,7 @@ var fs = require('fs');
 var requestLib = require('request');
 var url = require('url');
 var imagemagick = require('imagemagick');
+var mkdirp = require('mkdirp').mkdirp;
 
 var lastfm = new lfm_api.LastFM({
 	apiKey    : 'c0db7c8bfb98655ab25aa2e959fdcc68',
@@ -71,14 +72,32 @@ function getOriginalSizeImage(albumId, artist, album, callback) {
     });
 }
 
-function resizeImage(fileData, newFile, size, callback) {
-    imagemagick.resize({srcData: fileData, dstPath: newFile, width: size}, function(err, stdout, stderr) {
-        if(err) {
-            console.log(err);
-            callback(false);
+function ensureDirectory(filePath, callback) {
+    var dir = path.join(process.cwd(), path.dirname(filePath));
+    path.exists(dir, function(exists) {
+        if(!exists) {
+            mkdirp(dir, 0755, function(err) {
+                if(err) {
+                    console.log(err);
+                }
+                callback();
+            });
         } else {
-            callback(true);
+            callback();
         }
+    });
+}
+
+function resizeImage(fileData, newFile, size, callback) {
+    ensureDirectory(newFile, function() {
+        imagemagick.resize({srcData: fileData, dstPath: newFile, width: size}, function(err, stdout, stderr) {
+            if(err) {
+                console.log(err);
+                callback(false);
+            } else {
+                callback(true);
+            }
+        });
     });
 }
 
@@ -108,7 +127,6 @@ function sendAlbumImage(response, albumId, artist, album, size, failureCallback)
 function getImage(request, response, size) {
     var urlQuery = url.parse(request.url, true).query;
     
-    //TODO: Make directories if they're missing
     //TODO: Get track image if no album
     //TODO: Deal properly with getting no response from Last.fm (we don't want to keep going back to them).
     //TODO: Make sure we're not doing more than one request at a time for the same track
