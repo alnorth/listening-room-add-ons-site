@@ -106,19 +106,21 @@ function sendAlbumImage(response, albumId, artist, album, size, failureCallback)
 }
 
 function getImage(request, response, size) {
-    var urlObj = url.parse(request.url, true);
-		
-    //TODO: Check parameters
+    var urlQuery = url.parse(request.url, true).query;
+    
     //TODO: Make directories if they're missing
     //TODO: Get track image if no album
     //TODO: Deal properly with getting no response from Last.fm (we don't want to keep going back to them).
-    //TODO: Don't even save the original
     //TODO: Make sure we're not doing more than one request at a time for the same track
     //TODO: Make it all nice
     //TODO: Only download medium images if we can get away with it
-	db.addTrack(urlObj.query, function (trackId, artistId, albumId) {
-        sendAlbumImage(response, albumId, urlObj.query["artist"], urlObj.query["album"], size, function() {
+    if(urlQuery["artist"] && urlQuery["artist"] != "" && urlQuery["title"] && urlQuery["title"] != "") {
+        db.addTrack(urlQuery, function (trackId, artistId, albumId) {
+            sendAlbumImage(response, albumId, urlQuery["artist"], urlQuery["album"], size, function() {
+            });
         });
-	});
+    } else {
+        sendImage(response, "none");
+    }
 }
 exports.getImage = getImage;
