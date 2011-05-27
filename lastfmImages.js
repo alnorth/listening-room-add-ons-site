@@ -36,6 +36,14 @@ function getImageFilename(trackId, albumId, dir) {
     }
 }
 
+function getFailureFilename(trackId, albumId, dir) {
+    if(albumId) {
+        return "images/album/"+ dir +"/"+ albumId +"_missing.txt";
+    } else {
+        return "images/track/"+ dir +"/"+ trackId +"_missing.txt";
+    }
+}
+
 function sendImage(response, imagePath) {
     if(imagePath != "none") {
         fs.readFile(imagePath, function (err, data) {
@@ -103,6 +111,7 @@ function resizeImage(fileData, newFile, size, callback) {
 
 function sendAlbumImage(response, albumId, artist, album, size, failureCallback) {
     var resizedAlbumFile = getImageFilename(undefined, albumId, size);
+    
     path.exists(resizedAlbumFile, function(exists) {
         if(exists) {
             sendImage(response, resizedAlbumFile);
@@ -124,17 +133,45 @@ function sendAlbumImage(response, albumId, artist, album, size, failureCallback)
     });
 }
 
+function hasFailureBeenRecorded(albumId, size, noCallback, yesCallback) {
+    var failureFileName = getFailureFilename(undefined, albumId, size);
+    path.exists(failureFileName, function(exists) {
+        if(exists) {
+            yesCallback();
+        } else {
+            noCallback();
+        }
+    });
+}
+
+function recordFailure(albumId, size) {
+    var failureFileName = getFailureFilename(undefined, albumId, size);
+    ensureDirectory(failureFileName, function() {
+        fs.writeFile(failureFileName, "", function(err) {
+            if(err) {
+                console.log(err);
+            }
+        });
+    });
+}
+
 function getImage(request, response, size) {
     var urlQuery = url.parse(request.url, true).query;
     
     //TODO: Get track image if no album
-    //TODO: Deal properly with getting no response from Last.fm (we don't want to keep going back to them).
     //TODO: Make sure we're not doing more than one request at a time for the same track
     //TODO: Make it all nice
     //TODO: Only download medium images if we can get away with it
     if(urlQuery["artist"] && urlQuery["artist"] != "" && urlQuery["title"] && urlQuery["title"] != "") {
         db.addTrack(urlQuery, function (trackId, artistId, albumId) {
-            sendAlbumImage(response, albumId, urlQuery["artist"], urlQuery["album"], size, function() {
+            hasFailureBeenRecorded(albumId, size, function() {
+                sendAlbumImage(response, albumId, urlQuery["artist"], urlQuery["album"], size, function() {
+                    sendImage(response, "none");
+                    recordFailure(albumId, size);
+                });
+            },
+            function() {
+                sendImage(response, "none");
             });
         });
     } else {
