@@ -4,6 +4,7 @@ var path = require('path');
 var fs = require('fs');
 var requestLib = require('request');
 var url = require('url');
+var imagemagick = require('imagemagick');
 
 var lastfm = new lfm_api.LastFM({
 	apiKey    : 'c0db7c8bfb98655ab25aa2e959fdcc68',
@@ -60,16 +61,50 @@ function downloadImage(imageUrl, filename, callback) {
     });
 }
 
-function sendAlbumImage(response, albumId, artist, album, failureCallback) {
+function getOriginalSizeImage(albumId, artist, album, callback) {
     var albumFile = getImageFilename(undefined, albumId, "original");
     path.exists(albumFile, function(exists) {
         if(exists) {
-            sendImage(response, albumFile);
+            callback(albumFile);
         } else {
             getAlbumImageFromLastFm(artist, album, function(imageUrl) {
                 if(imageUrl) {
                     downloadImage(imageUrl, albumFile, function(result) {
-                        sendImage(response, albumFile);
+                        callback(albumFile);
+                    });
+                } else {
+                    callback(undefined);
+                }
+            });
+        }
+    });
+}
+
+function resizeImage(oldFile, newFile, size, callback) {
+    imagemagick.resize({srcPath: oldFile, dstPath: newFile, width: size}, function(err, stdout, stderr) {
+        if(err) {
+            console.log(err);
+            callback(false);
+        } else {
+            callback(true);
+        }
+    });
+}
+
+function sendAlbumImage(response, albumId, artist, album, size, failureCallback) {
+    var resizedAlbumFile = getImageFilename(undefined, albumId, size);
+    path.exists(resizedAlbumFile, function(exists) {
+        if(exists) {
+            sendImage(response, resizedAlbumFile);
+        } else {
+            getOriginalSizeImage(albumId, artist, album, function(originalAlbumFile) {
+                if(originalAlbumFile) {
+                    resizeImage(originalAlbumFile, resizedAlbumFile, size, function(success) {
+                        if(success) {
+                            sendImage(response, resizedAlbumFile);
+                        } else {
+                            failureCallback();
+                        }
                     });
                 } else {
                     failureCallback();
@@ -83,8 +118,12 @@ function getImage(request, response, size) {
     var urlObj = url.parse(request.url, true);
 		
     //TODO: Check parameters
+    //TODO: Get track image if no album
+    //TODO: Deal properly with getting no response from Last.fm (we don't want to keep going back to them).
+    //TODO: Don't even save the original
+    //TODO: Make it all nice
 	db.addTrack(urlObj.query, function (trackId, artistId, albumId) {
-        sendAlbumImage(response, albumId, urlObj.query["artist"], urlObj.query["album"], function() {
+        sendAlbumImage(response, albumId, urlObj.query["artist"], urlObj.query["album"], size, function() {
         });
 	});
 }
