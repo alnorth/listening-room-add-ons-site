@@ -1,0 +1,53 @@
+!!! 5
+html
+    head
+        title Listening Room Data API v1
+        link(rel="stylesheet", href="/static/api.css")
+    body
+        div.wrapper
+            h1 Listening Room Data API v1
+            p This API can be used to retrieve data on the tracks that have been played on the Listening Room website.
+            p This data has been recorded using the Listening Room Add-ons Chrome extension. This method of collection means that track plays will only be recorded if someone using the extension uses the room.
+            p Data is provided in JSON format, and an optional "callback" parameter can be added to all API calls so that you can use JSONP.
+            p There are a number of different sets of data that you can retrieve. Each different group of data has its own page. Each page also has a number of mandatory or optional parameters that should be provided in the query string.
+            
+            div.page
+                div.pagetitle
+                    span.pagetitle All Users - 
+                    span.url #{root}all_users.json
+                div.pagedesc Data on all the users that have played tracks in a specific room.
+                div.fields
+                    div.subtitle Fields returned
+                    dl
+                        dt username
+                        dd The user's twitter name.
+                        dt user_id
+                        dd The user's ID in this database. This is an integer.
+                        dt user_lr_id
+                        dd The user's ID in Listening Room. This is a GUID.
+                        dt plays
+                        dd The number of tracks this user has played in this room.
+                div.params.mandatory
+                    div.subtitle Mandatory parameters
+                    dl
+                        dt room
+                        dd The name of the room to filter by.
+                div.params.optional
+                    div.subtitle Optional parameters
+                    dl
+                        dt from
+                        dd A UNIX timestamp representing the earliest date/time for track plays to be considered. This is inclusive, so tracks played at the exact second given will be included.
+                        dt to
+                        dd A UNIX timestamp representing the latest date/time for track plays to be considered. This is inclusive, so tracks played at the exact second given will be included.
+                        dt limit
+                        dd The maximum number of results to return. The maximum value for this (and the default) is 200.
+                        dt offset
+                        dd The number of results to skip.
+                        dt order
+                        dd The value to order by. Available values for this page are "username" and "plays". If this parameter is not provided then data will be provided in descending order of plays.
+                        dt order_type
+                        dd Whether the order parameter should be applied with values ascending or descending. Available values are "asc" and "desc", and the default is "asc". This parameter is only considered if the order parameter is also supplied.
+                        dt callback
+                        dd Callback function name for JSONP usage.
+                    
+            

@@ -94,7 +94,7 @@ function call(request, response, pagename) {
 		} else {
 			params.push(0);
 		}
-		if(checkParam(urlObj, "limit")) {
+		if(checkParam(urlObj, "limit") && urlObj.query["limit"] <= 200) {
 			params.push(urlObj.query["limit"]);
 		} else {
 			params.push(200);
