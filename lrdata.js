@@ -33,7 +33,8 @@ function renderToResponse(filename, options, response) {
 }
 
 function v1ApiDocs(request, response) {
-    renderToResponse("templates/v1api.jade", {locals: {root: "http://localhost:8080/v1/"}}, response);
+    var host = request.headers.host || "lrdata.alnorth.com";
+    renderToResponse("templates/v1api.jade", {locals: {root: "http://"+ host +"/v1/"}}, response);
 }
 
 function v1ApiCall(request, response, pagename) {
