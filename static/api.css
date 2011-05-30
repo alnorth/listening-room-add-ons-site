@@ -31,9 +31,20 @@ div.page {
 }
 
 div.page, div.fields, div.params {
-    background-color: #CDF;
     border-radius: 10px;
     padding: 10px;
+}
+
+div.users div.page {
+    background-color: #CDF;
+}
+
+div.artists div.page {
+    background-color: #FCD;
+}
+
+div.tracks div.page {
+    background-color: #DFC;
 }
 
 div.fields, div.params {
