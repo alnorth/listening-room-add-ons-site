@@ -68,7 +68,7 @@ html
                     dl
                         dt room
                         dd The name of the room to filter by.
-                        dt username or user_id
+                        dt username or id
                         dd Either the user's twitter name or their ID in this database must be supplied.
                 div.params.optional
                     div.subtitle Optional parameters
@@ -110,7 +110,7 @@ html
                     dl
                         dt room
                         dd The name of the room to filter by.
-                        dt username or user_id
+                        dt username or id
                         dd Either the user's twitter name or their ID in this database must be supplied.
                 div.params.optional
                     div.subtitle Optional parameters
@@ -154,7 +154,7 @@ html
                     dl
                         dt room
                         dd The name of the room to filter by.
-                        dt username or user_id
+                        dt username or id
                         dd Either the user's twitter name or their ID in this database must be supplied.
                 div.params.optional
                     div.subtitle Optional parameters
@@ -169,6 +169,168 @@ html
                         dd The number of results to skip.
                         dt order
                         dd The value to order by. Available values for this page are "track_title", "artist_name" and "play_date". If this parameter is not provided then data will be provided in descending order of play_date.
+                        dt order_type
+                        dd Whether the order parameter should be applied with values ascending or descending. Available values are "asc" and "desc", and the default is "asc". This parameter is only considered if the order parameter is also supplied.
+                        dt callback
+                        dd Callback function name for JSONP usage.
+			
+			
+			div.page
+                div.pagetitle
+                    span.pagetitle All Artists - 
+                    span.url #{root}all_artists.json
+                div.pagedesc Data on all the artists whose tracks have been played in a specific room.
+                div.fields
+                    div.subtitle Fields returned
+                    dl
+                        dt artist_name
+                        dd The artist's name.
+                        dt artist_id
+                        dd The artist's ID in this database. This is an integer.
+                        dt plays
+                        dd The number of tracks played.
+                div.params.mandatory
+                    div.subtitle Mandatory parameters
+                    dl
+                        dt room
+                        dd The name of the room to filter by.
+                div.params.optional
+                    div.subtitle Optional parameters
+                    dl
+                        dt from
+                        dd A UNIX timestamp representing the earliest date/time for track plays to be considered. This is inclusive, so tracks played at the exact second given will be included.
+                        dt to
+                        dd A UNIX timestamp representing the latest date/time for track plays to be considered. This is inclusive, so tracks played at the exact second given will be included.
+                        dt limit
+                        dd The maximum number of results to return. The maximum value for this (and the default) is 200.
+                        dt offset
+                        dd The number of results to skip.
+                        dt order
+                        dd The value to order by. Available values for this page are "artist_name" and "plays". If this parameter is not provided then data will be provided in descending order of plays.
+                        dt order_type
+                        dd Whether the order parameter should be applied with values ascending or descending. Available values are "asc" and "desc", and the default is "asc". This parameter is only considered if the order parameter is also supplied.
+                        dt callback
+                        dd Callback function name for JSONP usage.
+            div.page
+                div.pagetitle
+                    span.pagetitle Artist's Track Data - 
+                    span.url #{root}artist.json?type=tracks
+                div.pagedesc Data on tracks by a specific artist played in a room.
+                div.fields
+                    div.subtitle Fields returned
+                    dl
+                        dt track_title
+                        dd The track's title.
+                        dt track_id
+                        dd The track's ID in this database. This is an integer.
+                        dt plays
+                        dd The number of tracks played.
+                div.params.mandatory
+                    div.subtitle Mandatory parameters
+                    dl
+                        dt room
+                        dd The name of the room to filter by.
+                        dt artist or id
+                        dd Either the artist's name or their ID in this database must be supplied.
+                div.params.optional
+                    div.subtitle Optional parameters
+                    dl
+                        dt from
+                        dd A UNIX timestamp representing the earliest date/time for track plays to be considered. This is inclusive, so tracks played at the exact second given will be included.
+                        dt to
+                        dd A UNIX timestamp representing the latest date/time for track plays to be considered. This is inclusive, so tracks played at the exact second given will be included.
+                        dt limit
+                        dd The maximum number of results to return. The maximum value for this (and the default) is 200.
+                        dt offset
+                        dd The number of results to skip.
+                        dt order
+                        dd The value to order by. Available values for this page are "track_title" and "plays". If this parameter is not provided then data will be provided in descending order of plays.
+                        dt order_type
+                        dd Whether the order parameter should be applied with values ascending or descending. Available values are "asc" and "desc", and the default is "asc". This parameter is only considered if the order parameter is also supplied.
+                        dt callback
+                        dd Callback function name for JSONP usage.
+            div.page
+                div.pagetitle
+                    span.pagetitle Artist's User Data - 
+                    span.url #{root}artist.json?type=users
+                div.pagedesc Data on users that have played tracks by a specific artist.
+                div.fields
+                    div.subtitle Fields returned
+                    dl
+                        dt username
+                        dd The user's twitter name.
+                        dt user_id
+                        dd The user's ID in this database. This is an integer.
+                        dt user_lr_id
+                        dd The user's ID in Listening Room. This is a GUID.
+                        dt plays
+                        dd The number of tracks played.
+                div.params.mandatory
+                    div.subtitle Mandatory parameters
+                    dl
+                        dt room
+                        dd The name of the room to filter by.
+                        dt artist or id
+                        dd Either the artist's name or their ID in this database must be supplied.
+                div.params.optional
+                    div.subtitle Optional parameters
+                    dl
+                        dt from
+                        dd A UNIX timestamp representing the earliest date/time for track plays to be considered. This is inclusive, so tracks played at the exact second given will be included.
+                        dt to
+                        dd A UNIX timestamp representing the latest date/time for track plays to be considered. This is inclusive, so tracks played at the exact second given will be included.
+                        dt limit
+                        dd The maximum number of results to return. The maximum value for this (and the default) is 200.
+                        dt offset
+                        dd The number of results to skip.
+                        dt order
+                        dd The value to order by. Available values for this page are "username" and "plays". If this parameter is not provided then data will be provided in descending order of plays.
+                        dt order_type
+                        dd Whether the order parameter should be applied with values ascending or descending. Available values are "asc" and "desc", and the default is "asc". This parameter is only considered if the order parameter is also supplied.
+                        dt callback
+                        dd Callback function name for JSONP usage.
+            div.page
+                div.pagetitle
+                    span.pagetitle Artist's Play Data - 
+                    span.url #{root}artist.json?type=all_plays
+                div.pagedesc Data on all track plays by a specific artist.
+                div.fields
+                    div.subtitle Fields returned
+                    dl
+                        dt username
+                        dd The user's twitter name.
+                        dt user_id
+                        dd The user's ID in this database. This is an integer.
+                        dt user_lr_id
+                        dd The user's ID in Listening Room. This is a GUID.
+                        dt track_title
+                        dd The track's title.
+                        dt track_id
+                        dd The track's ID in this database. This is an integer.
+                        dt play_date
+                        dd A UNIX timestamp giving the date and time of this track play.
+                        dt play_lr_id
+                        dd Listening Room's ID for this track play. This is a GUID.
+                div.params.mandatory
+                    div.subtitle Mandatory parameters
+                    dl
+                        dt room
+                        dd The name of the room to filter by.
+                        dt artist or id
+                        dd Either the artist's name or their ID in this database must be supplied.
+                div.params.optional
+                    div.subtitle Optional parameters
+                    dl
+                        dt from
+                        dd A UNIX timestamp representing the earliest date/time for track plays to be considered. This is inclusive, so tracks played at the exact second given will be included.
+                        dt to
+                        dd A UNIX timestamp representing the latest date/time for track plays to be considered. This is inclusive, so tracks played at the exact second given will be included.
+                        dt limit
+                        dd The maximum number of results to return. The maximum value for this (and the default) is 200.
+                        dt offset
+                        dd The number of results to skip.
+                        dt order
+                        dd The value to order by. Available values for this page are "username", "track_title" and "play_date". If this parameter is not provided then data will be provided in descending order of play_date.
                         dt order_type
                         dd Whether the order parameter should be applied with values ascending or descending. Available values are "asc" and "desc", and the default is "asc". This parameter is only considered if the order parameter is also supplied.
                         dt callback
