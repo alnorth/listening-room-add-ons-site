@@ -22,9 +22,13 @@ function getTrackImage(request, response) {
 
 function renderToResponse(filename, options, response) {
     jade.renderFile(filename, options, function(err, html){
-        response.writeHead(200, {'Content-Type': 'text/html'});
-    	response.write(html);
-		response.end();
+        if(err) {
+            console.log(err);
+        } else {
+            response.writeHead(200, {'Content-Type': 'text/html'});
+            response.write(html);
+            response.end();
+        }
     });
 }
 
