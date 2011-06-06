@@ -88,17 +88,19 @@ function call(request, response, pagename) {
 		}
 		order += " ";
 		
-		var limit = "LIMIT ?, ? ";
+		var limit = "LIMIT ";
 		if(checkParam(urlObj, "offset")) {
-			params.push(urlObj.query["offset"]);
+			limit += urlObj.query["offset"];
 		} else {
-			params.push(0);
+			limit += "0";
 		}
+		limit += ", ";
 		if(checkParam(urlObj, "limit") && urlObj.query["limit"] <= 200) {
-			params.push(urlObj.query["limit"]);
+			limit += urlObj.query["limit"];
 		} else {
-			params.push(200);
+			limit += "200";
 		}
+		limit += " ";
 	
 		var sql = fields + joins + where + group + order + limit;
 		
@@ -217,6 +219,6 @@ function checkRequiredParams(pagename, urlObj) {
 	}
 	return false;
 	
-	// Check that parameters that should be integers are integers
+	// Check that parameters that should be integers are integers, especially limit and offset
 }
 
