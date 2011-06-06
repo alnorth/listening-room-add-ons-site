@@ -19,7 +19,7 @@ function call(request, response, pagename) {
 	
 		var joins = " FROM TRACK_PLAY p JOIN ROOM r ON r.id = p.room_id ";
 		if(pagename == "user" || fieldsData.fields.u) {joins += "JOIN USER u ON u.id = p.user_id ";}
-		if(pagename == "track" || fieldsData.fields.t || fieldsData.fields.art) {joins += "JOIN TRACK t ON t.id = p.track_id ";}
+		if(pagename == "artist" || pagename == "track" || fieldsData.fields.t || fieldsData.fields.art) {joins += "JOIN TRACK t ON t.id = p.track_id ";}
 		if(pagename == "artist" || pagename == "track" || fieldsData.fields.art) {joins += "JOIN ARTIST art ON art.id = t.artist_id ";}
 		
 		var whereClauses = [];
