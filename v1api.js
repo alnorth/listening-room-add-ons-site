@@ -6,8 +6,13 @@ function call(request, response, pagename) {
 	var type = urlObj.query["type"];
 	
 	var fieldsData = getFieldsData(pagename, type);
+    
+    var errors = checkAllParams(pagename, urlObj);
+    if(!fieldsData) {
+        errors.push("Invalid combination of page name and type parameter.");
+    }
 	
-	if(fieldsData && checkRequiredParams(pagename, urlObj)) {
+	if(errors.length === 0) {
 	
 		var fields = "SELECT ";
 		if(fieldsData.fields.u) {fields += "u.username AS username, u.id AS user_id, u.lr_id AS user_lr_id, ";}
@@ -88,15 +93,16 @@ function call(request, response, pagename) {
 		}
 		order += " ";
 		
+        // Use parseInt to double check that we're not opening ourselves up to attack here
 		var limit = "LIMIT ";
 		if(checkParam(urlObj, "offset")) {
-			limit += urlObj.query["offset"];
+			limit += parseInt(urlObj.query["offset"], 10);
 		} else {
 			limit += "0";
 		}
 		limit += ", ";
 		if(checkParam(urlObj, "limit") && urlObj.query["limit"] <= 200) {
-			limit += urlObj.query["limit"];
+			limit += parseInt(urlObj.query["limit"], 10);
 		} else {
 			limit += "200";
 		}
@@ -120,7 +126,7 @@ function call(request, response, pagename) {
 		
 	} else {
 		response.writeHead(400, {'Content-Type': 'text/javascript'});
-    	response.write('Parameters missing. See API documentation for details.');
+    	response.write(JSON.stringify(errors));
 		response.end();
 	}
 }
@@ -205,20 +211,60 @@ function checkParam(urlObj, name) {
 	return urlObj.query[name] && urlObj.query[name] != "";
 }
 
-function checkRequiredParams(pagename, urlObj) {
-	if(checkParam(urlObj, "room")) {
-		if(pagename == "all_artists" || pagename == "all_tracks" || pagename == "all_users") {
-			return true;
-		} else if(pagename == "artist") {
-			return checkParam(urlObj, "id") || checkParam(urlObj, "artist_name");
-		} else if(pagename == "track") {
-			return checkParam(urlObj, "id") || (checkParam(urlObj, "artist_name") && checkParam(urlObj, "track_title"));
-		} else if(pagename == "user") {
-			return checkParam(urlObj, "id") || checkParam(urlObj, "username");
-		}
-	}
-	return false;
+function isInt(value) { 
+    if((parseFloat(value) == parseInt(value)) && !isNaN(value)){
+        return true;
+    } else { 
+        return false;
+    } 
+}
+
+function checkAllParams(pagename, urlObj) {
+    var errors = [];
+    
+	if(!checkParam(urlObj, "room")) {
+        errors.push("room parameter not present.");
+    }
+    if(pagename == "artist") {
+        if(checkParam(urlObj, "id")) {
+            if(!isInt(urlObj.query["id"])) {
+                errors.push("id must be an integer");
+            }
+        } else if(!checkParam(urlObj, "artist_name")) {
+            errors.push("For artist data you must provide either an id or an artist_name.");
+        }
+    } else if(pagename == "track") {
+        return checkParam(urlObj, "id") || (checkParam(urlObj, "artist_name") && checkParam(urlObj, "track_title"));
+        if(checkParam(urlObj, "id")) {
+            if(!isInt(urlObj.query["id"])) {
+                errors.push("id must be an integer");
+            }
+        } else if(!(checkParam(urlObj, "artist_name") && checkParam(urlObj, "track_title"))) {
+            errors.push("For track data you must provide either an id or artist_name and track_title.");
+        }
+    } else if(pagename == "user") {
+        if(checkParam(urlObj, "id")) {
+            if(!isInt(urlObj.query["id"])) {
+                errors.push("id must be an integer");
+            }
+        } else if(!checkParam(urlObj, "username")) {
+            errors.push("For user data you must provide either an id or a username.");
+        }
+    }
+    
+    if(checkParam(urlObj, "limit") && !isInt(urlObj.query["limit"])) {
+        errors.push("If limit is set then it must be an integer.");
+    }
+    if(checkParam(urlObj, "offset") && !isInt(urlObj.query["offset"])) {
+        errors.push("If offset is set then it must be an integer.");
+    }
+    if(checkParam(urlObj, "from") && !isInt(urlObj.query["from"])) {
+        errors.push("If from is set then it must be an integer.");
+    }
+    if(checkParam(urlObj, "to") && !isInt(urlObj.query["to"])) {
+        errors.push("If to is set then it must be an integer.");
+    }
 	
-	// Check that parameters that should be integers are integers, especially limit and offset
+	return errors;
 }
 
