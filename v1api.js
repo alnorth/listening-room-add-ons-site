@@ -234,7 +234,6 @@ function checkAllParams(pagename, urlObj) {
             errors.push("For artist data you must provide either an id or an artist_name.");
         }
     } else if(pagename == "track") {
-        return checkParam(urlObj, "id") || (checkParam(urlObj, "artist_name") && checkParam(urlObj, "track_title"));
         if(checkParam(urlObj, "id")) {
             if(!isInt(urlObj.query["id"])) {
                 errors.push("id must be an integer");
