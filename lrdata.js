@@ -10,8 +10,8 @@ function addTrackPlay(request, response) {
     var urlObj = url.parse(request.url, true);
     var jsonCallback = urlObj.query["callback"];
 	var ip = request.connection.remoteAddress;
-	if(ip === "127.0.0.1" && request.headers["X-Forwarded-For"]) {
-		ip = request.headers["X-Forwarded-For"];
+	if(ip === "127.0.0.1" && request.headers["x-forwarded-for"]) {
+		ip = request.headers["x-forwarded-for"];
 	}
     db.addTrackPlay(urlObj.query, ip, function(trackId, artistId, playId, err) {
     	response.writeHead(200, {'Content-Type': 'text/javascript'});
