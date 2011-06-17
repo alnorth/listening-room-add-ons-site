@@ -39,7 +39,7 @@ function createRoom(name, callback) {
 }
 
 function createUser(lrId, name, callback) {
-	if(name == "") {
+	if(name == "" || name == "undefined") {
 		name = undefined;
 	}
 	client.query("INSERT IGNORE INTO USER(lr_id, username) VALUES(?, ?);", [lrId, name], function(err, info) {
