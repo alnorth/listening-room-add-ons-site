@@ -57,3 +57,8 @@ dt {
     font-weight: bold;
     margin-top: 3px;
 }
+
+div.footer {
+	text-align: center;
+	font-size: smaller;
+}
