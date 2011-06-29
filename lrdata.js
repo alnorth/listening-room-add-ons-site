@@ -20,8 +20,18 @@ function addTrackPlay(request, response) {
     });
 }
 
-function getTrackImage(request, response) {
-	lastfmImages.getImage(request, response, 190);
+function getImage(request, response, type, size) {
+	var pixels;
+	if(size === "small") {
+		pixels = 30;
+	} else if(size === "record") {
+		pixels = 190;
+	}
+	lastfmImages.getImage(request, response, type, pixels);
+}
+
+function oldGetTrackImage(request, response) {
+	lastfmImages.getImage(request, response, "album", 190);
 }
 
 function renderToResponse(filename, options, response) {
@@ -47,6 +57,7 @@ function v1ApiCall(request, response, pagename) {
 
 exports.urls = clutch.route404([['GET /$', v1ApiDocs],
                                 ['GET /addtrackplay/$', addTrackPlay],
-                                ['GET /trackimage/$', getTrackImage],
+                                ['GET /image/(\\w+)/(\\w+)/$', getImage],
+								['GET /trackimage/$', oldGetTrackImage], // Backwards compatability, can be removed later
 								['GET /v1/(\\w+)\.json$', v1ApiCall],
                                 ["GET /static/(\\w+\\.\\w+)$", staticfile.serve]]);

@@ -109,6 +109,13 @@ function checkParam(trackData, name) {
 	return trackData[name] && trackData[name] != "";
 }
 
+function addArtist(trackData, callback) {
+	createArtist(trackData["artist"], function(artistId) {
+		callback(artistId);
+	});
+}
+exports.addArtist = addArtist;
+
 function addTrack(trackData, callback) {
 	createArtist(trackData["artist"], function(artistId) {
 		createAlbum(artistId, trackData["album"], function(albumId) {

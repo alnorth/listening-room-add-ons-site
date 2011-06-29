@@ -12,36 +12,153 @@ var lastfm = new lfm_api.LastFM({
 	apiSecret : 'aff4890d7cb9492bc72250abbeffc3e1'
 });
 
-function getAlbumImageUrlFromLastFm(artist, album, callback) {
-   	lastfm.album.getInfo({artist: artist, album: album}, {success: function(data){
-        var lastfmImageUrl;
-		if(data && data.album && data.album.image) {
-			for(var i = data.album.image.length - 1; i >=0; i--) {
-                if(lastfmImageUrl == undefined && data.album.image[i] != "") {
-					lastfmImageUrl = data.album.image[i]["#text"];
+function fetchAndSendImage(urlQuery, response, type, size, ids, errCallback) {
+	if(ids[type]) {
+		hasFailureBeenRecorded(type, ids[type], size, errCallback, function() {
+			var resizedImageFile = getImageFilename(type, ids[type], size);
+    
+			path.exists(resizedImageFile, function(exists) {
+				if(exists) {
+					sendImage(response, resizedImageFile);
+				} else {
+					getOriginalSizeImage(urlQuery, type, function(fileData) {
+						if(fileData) {
+							resizeImage(fileData, resizedImageFile, size, function(success) {
+								if(success) {
+									sendImage(response, resizedImageFile);
+								} else {
+									errCallback();
+								}
+							});
+						} else {
+							errCallback();
+						}
+					});
 				}
-			}
+			});
+		});
+	} else {
+		errCallback();
+	}
+}
+
+function getOriginalSizeImage(urlQuery, type, callback) {
+    getImageUrlFromLastFm(urlQuery, type, function(imageUrl) {
+        if(imageUrl) {
+            downloadImage(imageUrl, function(fileData) {
+                callback(fileData);
+            });
+        } else {
+            callback(undefined);
+        }
+    });
+}
+
+function getImageUrlFromLastFm(urlQuery, type, callback) {
+	switch(type) {
+		case "album":
+			lastfm.album.getInfo({artist: urlQuery.artist, album: urlQuery.album}, {success: function(data){
+				var lastfmImageUrl;
+				if(data && data.album && data.album.image) {
+					lastfmImageUrl = getImageFromLastFmArray(data.album.image);
+				}
+				callback(lastfmImageUrl);
+			}, error: function(code, message){
+				callback(undefined);
+			}});
+			break;
+		case "artist":
+			lastfm.artist.getInfo({artist: urlQuery.artist}, {success: function(data){
+				var lastfmImageUrl;
+				if(data && data.artist && data.artist.image) {
+					lastfmImageUrl = getImageFromLastFmArray(data.artist.image);
+				}
+				callback(lastfmImageUrl);
+			}, error: function(code, message){
+				callback(undefined);
+			}});
+			break;
+		case "track":
+			lastfm.track.getInfo({artist: urlQuery.artist, track: urlQuery.title}, {success: function(data){
+				var lastfmImageUrl;
+				if(data && data.track && data.track.album && data.track.album.image) {
+					lastfmImageUrl = getImageFromLastFmArray(data.track.album.image);
+				}
+				callback(lastfmImageUrl);
+			}, error: function(code, message){
+				callback(undefined);
+			}});
+			break;
+	}
+}
+
+function getImageFromLastFmArray(arr) {
+	var url;
+	for(var i = arr.length - 1; i >=0; i--) {
+		if(url == undefined && arr[i] != "") {
+			url = arr[i]["#text"];
 		}
-        callback(lastfmImageUrl);
-	}, error: function(code, message){
-		callback(undefined);
-	}});
+	}
+	return url;
 }
 
-function getImageFilename(trackId, albumId, dir) {
-    if(albumId) {
-        return "images/album/"+ dir +"/"+ albumId +".jpg";
-    } else {
-        return "images/track/"+ dir +"/"+ trackId +".jpg";
-    }
+function getImageFilename(type, id, size) {
+    return "images/"+ type +"/"+ size +"/"+ id +".jpg";
 }
 
-function getFailureFilename(trackId, albumId, dir) {
-    if(albumId) {
-        return "images/album/"+ dir +"/"+ albumId +"_missing.txt";
-    } else {
-        return "images/track/"+ dir +"/"+ trackId +"_missing.txt";
-    }
+function getFailureFilename(type, id, size) {
+    return "images/"+ type +"/"+ size +"/"+ id +"_missing.txt";
+}
+
+function hasFailureBeenRecorded(type, id, size, yesCallback, noCallback) {
+    var failureFileName = getFailureFilename(type, id, size);
+    path.exists(failureFileName, function(exists) {
+        if(exists) {
+            yesCallback();
+        } else {
+            noCallback();
+        }
+    });
+}
+
+function recordFailure(type, id, size) {
+    var failureFileName = getFailureFilename(type, id, size);
+    ensureDirectory(failureFileName, function() {
+        fs.writeFile(failureFileName, "", function(err) {
+            if(err) {
+                console.log(err);
+            }
+        });
+    });
+}
+
+function resizeImage(fileData, newFile, size, callback) {
+    ensureDirectory(newFile, function() {
+        imagemagick.resize({srcData: fileData, dstPath: newFile, width: size}, function(err, stdout, stderr) {
+            if(err) {
+                console.log(err);
+                callback(false);
+            } else {
+                callback(true);
+            }
+        });
+    });
+}
+
+function ensureDirectory(filePath, callback) {
+    var dir = path.join(process.cwd(), path.dirname(filePath));
+    path.exists(dir, function(exists) {
+        if(!exists) {
+            mkdirp(dir, 0755, function(err) {
+                if(err) {
+                    console.log(err);
+                }
+                callback();
+            });
+        } else {
+            callback();
+        }
+    });
 }
 
 function sendImage(response, imagePath) {
@@ -68,114 +185,56 @@ function downloadImage(imageUrl, callback) {
     });
 }
 
-function getOriginalSizeImage(albumId, artist, album, callback) {
-    getAlbumImageUrlFromLastFm(artist, album, function(imageUrl) {
-        if(imageUrl) {
-            downloadImage(imageUrl, function(fileData) {
-                callback(fileData);
-            });
-        } else {
-            callback(undefined);
-        }
-    });
+function checkParams(urlQuery, params) {
+	var i;
+	for(i = 0; i < params.length; i++) {
+		if(!(urlQuery[params[i]] && urlQuery[params[i]])) {
+			return false;
+		}
+	}
+	return true;
 }
 
-function ensureDirectory(filePath, callback) {
-    var dir = path.join(process.cwd(), path.dirname(filePath));
-    path.exists(dir, function(exists) {
-        if(!exists) {
-            mkdirp(dir, 0755, function(err) {
-                if(err) {
-                    console.log(err);
-                }
-                callback();
-            });
-        } else {
-            callback();
-        }
-    });
+function getEntityIds(urlQuery, type, callback) {
+	switch(type) {
+		case "artist":
+			db.addArtist(urlQuery, function (artistId) {
+				callback({"artist": artistId});
+			});
+			break;
+		case "track":
+			db.addTrack(urlQuery, function (trackId, artistId, albumId) {
+				callback({"track": trackId, "artist": artistId, "album": albumId});
+			});
+			break;
+	}
 }
 
-function resizeImage(fileData, newFile, size, callback) {
-    ensureDirectory(newFile, function() {
-        imagemagick.resize({srcData: fileData, dstPath: newFile, width: size}, function(err, stdout, stderr) {
-            if(err) {
-                console.log(err);
-                callback(false);
-            } else {
-                callback(true);
-            }
-        });
-    });
-}
+var mandatoryParams = {
+	"artist": ["artist"],
+	"track": ["artist", "title"]
+};
 
-function sendAlbumImage(response, albumId, artist, album, size, failureCallback) {
-    var resizedAlbumFile = getImageFilename(undefined, albumId, size);
-    
-    path.exists(resizedAlbumFile, function(exists) {
-        if(exists) {
-            sendImage(response, resizedAlbumFile);
-        } else {
-            getOriginalSizeImage(albumId, artist, album, function(fileData) {
-                if(fileData) {
-                    resizeImage(fileData, resizedAlbumFile, size, function(success) {
-                        if(success) {
-                            sendImage(response, resizedAlbumFile);
-                        } else {
-                            failureCallback();
-                        }
-                    });
-                } else {
-                    failureCallback();
-                }
-            });
-        }
-    });
-}
-
-function hasFailureBeenRecorded(albumId, size, noCallback, yesCallback) {
-    var failureFileName = getFailureFilename(undefined, albumId, size);
-    path.exists(failureFileName, function(exists) {
-        if(exists) {
-            yesCallback();
-        } else {
-            noCallback();
-        }
-    });
-}
-
-function recordFailure(albumId, size) {
-    var failureFileName = getFailureFilename(undefined, albumId, size);
-    ensureDirectory(failureFileName, function() {
-        fs.writeFile(failureFileName, "", function(err) {
-            if(err) {
-                console.log(err);
-            }
-        });
-    });
-}
-
-function getImage(request, response, size) {
-    var urlQuery = url.parse(request.url, true).query;
-    
-    //TODO: Get track image if no album
-    //TODO: Make sure we're not doing more than one request at a time for the same track
-    //TODO: Make it all nice
-    //TODO: Only download medium images if we can get away with it
-    if(urlQuery["artist"] && urlQuery["artist"] != "" && urlQuery["title"] && urlQuery["title"] != "") {
-        db.addTrack(urlQuery, function (trackId, artistId, albumId) {
-            hasFailureBeenRecorded(albumId, size, function() {
-                sendAlbumImage(response, albumId, urlQuery["artist"], urlQuery["album"], size, function() {
-                    sendImage(response, "none");
-                    recordFailure(albumId, size);
-                });
-            },
-            function() {
-                sendImage(response, "none");
-            });
-        });
-    } else {
-        sendImage(response, "none");
-    }
+function getImage(request, response, type, size) {
+	var urlQuery = url.parse(request.url, true).query,
+		params = mandatoryParams[type];
+	
+	if(params && checkParams(urlQuery, params)) {
+		getEntityIds(urlQuery, type, function(ids) {
+			if(type === "track") {
+				fetchAndSendImage(urlQuery, response, "album", size, ids, function() {
+					fetchAndSendImage(urlQuery, response, "track", size, ids, function() {
+						sendImage(response, "none");
+					});
+				});
+			} else {
+				fetchAndSendImage(urlQuery, response, type, size, ids, function() {
+					sendImage(response, "none");
+				});
+			}
+		});
+	} else {
+		sendImage(response, "none");
+	}
 }
 exports.getImage = getImage;
