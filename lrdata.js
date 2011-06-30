@@ -22,7 +22,7 @@ function addTrackPlay(request, response) {
 
 function getImage(request, response, type, size) {
 	var pixels;
-	if(size === "small") {
+	if(size === "charts") {
 		pixels = 30;
 	} else if(size === "record") {
 		pixels = 190;
