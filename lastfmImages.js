@@ -27,10 +27,12 @@ function fetchAndSendImage(urlQuery, response, type, size, ids, errCallback) {
 								if(success) {
 									sendImage(response, resizedImageFile);
 								} else {
+									recordFailure(type, ids[type], size);
 									errCallback();
 								}
 							});
 						} else {
+							recordFailure(type, ids[type], size);
 							errCallback();
 						}
 					});
@@ -224,7 +226,9 @@ function getImage(request, response, type, size) {
 			if(type === "track") {
 				fetchAndSendImage(urlQuery, response, "album", size, ids, function() {
 					fetchAndSendImage(urlQuery, response, "track", size, ids, function() {
-						sendImage(response, "none");
+						fetchAndSendImage(urlQuery, response, "artist", size, ids, function() {
+							sendImage(response, "none");
+						});
 					});
 				});
 			} else {
