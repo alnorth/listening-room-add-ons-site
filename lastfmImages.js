@@ -163,17 +163,25 @@ function ensureDirectory(filePath, callback) {
     });
 }
 
+function respondNoImage(response) {
+	response.writeHead(404, {'Content-Type': 'text/html'});
+	response.write("No image available");
+	response.end();
+}
+
 function sendImage(response, imagePath) {
-    if(imagePath != "none") {
+    if(imagePath !== "none") {
         fs.readFile(imagePath, function (err, data) {
-            response.writeHead(200, {'Content-Type': 'image/jpeg'});
-            response.write(data);
-            response.end();
+			if(data) {
+				response.writeHead(200, {'Content-Type': 'image/jpeg'});
+				response.write(data);
+				response.end();
+			} else {
+				respondNoImage(response)
+			}
         });
     } else {
-        response.writeHead(404, {'Content-Type': 'text/html'});
-        response.write("No image available");
-        response.end();
+        respondNoImage(response)
     }
 };
 
