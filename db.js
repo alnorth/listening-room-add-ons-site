@@ -21,7 +21,13 @@ function upsert(insertQuery, insertData, selectQuery, selectData, callback) {
 			// The value was already in the database, and so no insert occurred.
 			client.query(selectQuery, selectData, function(err, results, fields) {
 				if(err) {console.log(err)};
-				callback(results[0]["id"]);
+				if(results.length > 0) {
+					callback(results[0]["id"]);
+				} else {
+					console.log("Select in upsert failed.");
+					console.log(selectQuery);
+					console.log(selectData);
+				}
 			});
 		} else {
 			// We did an insert, call back with the ID.
