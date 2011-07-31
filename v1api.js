@@ -19,6 +19,7 @@ function call(request, response, pagename) {
 		if(fieldsData.fields.t) {fields += "t.name AS track_title, t.id AS track_id, ";}
 		if(fieldsData.fields.art) {fields += "art.name AS artist_name, art.id AS artist_id, ";}
 		if(fieldsData.fields.p) {fields += "UNIX_TIMESTAMP(p.played) as play_date, p.lr_id AS play_lr_id, ";}
+		if(fieldsData.fields.tag) {fields += "tag.tag as tag_name, SUM(tag.lfm_count) AS tag_count, ";}
 		if(fieldsData.fields.count) {fields += "COUNT(*) AS plays, ";}
 		fields = fields.substring(0, fields.length - 2); // Remove the last comma
 	
@@ -26,6 +27,7 @@ function call(request, response, pagename) {
 		if(pagename == "user" || fieldsData.fields.u) {joins += "JOIN USER u ON u.id = p.user_id ";}
 		if(pagename == "artist" || pagename == "track" || fieldsData.fields.t || fieldsData.fields.art) {joins += "JOIN TRACK t ON t.id = p.track_id ";}
 		if(pagename == "artist" || pagename == "track" || fieldsData.fields.art) {joins += "JOIN ARTIST art ON art.id = t.artist_id ";}
+		if(fieldsData.fields.tag) {joins += "JOIN TRACK_TAG tag ON tag.track_id = p.track_id ";}
 		
 		var whereClauses = [];
 		var whereParams = [];
@@ -78,6 +80,7 @@ function call(request, response, pagename) {
 			if(fieldsData.fields.t) {group += "t.name, t.id, ";}
 			if(fieldsData.fields.art) {group += "art.name, art.id, ";}
 			if(fieldsData.fields.p) {group += "p.played, p.lr_id, ";}
+			if(fieldsData.fields.tag) {group += "tag.tag, ";}
 			group = group.substring(0, group.length - 2); // Remove the last comma
 		}
 		
@@ -190,6 +193,11 @@ var fieldsDataWithType = {
 			fields: {art: true, t: true, count: true},
 			allowed_ordering: {artist_name: true, track_title: true, plays: true},
 			default_ordering: "plays DESC"
+		},
+		tags: {
+			fields: {tag: true},
+			allowed_ordering: {tag_name: true, tag_count: true},
+			default_ordering: "tag_count DESC"
 		},
 		all_plays: {
 			fields: {art: true, t: true, p: true},
