@@ -74,7 +74,7 @@ function call(request, response, pagename) {
 		where = where.substring(0, where.length - 5); // Remove the last " AND "
 	
 		var group = "";
-		if(fieldsData.fields.count) {
+		if(fieldsData.fields.count || fieldsData.fields.tag) {
 			group = " GROUP BY ";
 			if(fieldsData.fields.u) {group += "u.username, u.id, u.lr_id, ";}
 			if(fieldsData.fields.t) {group += "t.name, t.id, ";}
