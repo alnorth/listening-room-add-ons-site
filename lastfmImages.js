@@ -1,4 +1,5 @@
 var lfm_api = require('./lastfm.api');
+var config = require('./config');
 var db = require('./db');
 var path = require('path');
 var fs = require('fs');
@@ -8,8 +9,8 @@ var imagemagick = require('imagemagick');
 var mkdirp = require('mkdirp').mkdirp;
 
 var lastfm = new lfm_api.LastFM({
-	apiKey    : 'c0db7c8bfb98655ab25aa2e959fdcc68',
-	apiSecret : 'aff4890d7cb9492bc72250abbeffc3e1'
+	apiKey    : config.lfmApiKey,
+	apiSecret : config.lfmApiSecret
 });
 
 function fetchAndSendImage(urlQuery, response, type, size, ids, errCallback) {

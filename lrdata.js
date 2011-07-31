@@ -5,6 +5,10 @@ var db = require('./db');
 var v1api = require('./v1api');
 var lastfmImages = require('./lastfmImages');
 var staticfile = require("./staticfile");
+var tagFetcher = require('./tagFetcher');
+var config = require('./config');
+
+var tagFetcherInterval = setInterval(tagFetcher.fetchDataForNextTag, config.tagFetchFrequency);
 
 function addTrackPlay(request, response) {
     var urlObj = url.parse(request.url, true);

@@ -16,11 +16,11 @@ exports.query = function(sql, data, callback) {
 
 function upsert(insertQuery, insertData, selectQuery, selectData, callback) {
 	client.query(insertQuery, insertData, function(err, info) {
-		if(err) {console.log(err)};
+		if(err) {console.log(err);}
 		if(info.insertId == 0) {
 			// The value was already in the database, and so no insert occurred.
 			client.query(selectQuery, selectData, function(err, results, fields) {
-				if(err) {console.log(err)};
+				if(err) {console.log(err);}
 				if(results.length > 0) {
 					callback(results[0]["id"]);
 				} else {
@@ -154,3 +154,38 @@ function addTrackPlay(trackData, ip, callback) {
 	}
 }
 exports.addTrackPlay = addTrackPlay;
+
+function getNextTrackForTagRefresh(callback) {
+	var tagQuery = "SELECT t.id AS track_id, t.name AS track_name, art.name AS artist_name FROM TRACK t JOIN ARTIST art ON art.id = t.artist_id WHERE t.tags_fetched IS NULL OR DATEDIFF(NOW(), t.tags_fetched) > ? ORDER BY t.tags_fetched LIMIT 1";
+	client.query(tagQuery, [config.tagAgeBeforeRefresh], function(err, results, fields) {
+		if(err) {
+			console.log(err);
+		} else {
+			callback(results);
+		}
+	});
+}
+exports.getNextTrackForTagRefresh = getNextTrackForTagRefresh;
+
+function setTrackTagData(trackId, tag, lfmCount) {
+	client.query("INSERT IGNORE INTO TRACK_TAG(track_id, tag, lfm_count) VALUES (?, ?, ?);", [trackId, tag, lfmCount], function(err, info) {
+		if(err) {
+			console.log(err);
+		} else {
+			if(info.insertId === 0) {
+				// There was a value already in the database, and so no insert occurred.
+				client.query("UPDATE TRACK_TAG SET lfm_count = ? WHERE track_id = ? AND tag = ?", [lfmCount, trackId, tag], function(err, info) {
+					if(err) {console.log(err);}
+				});
+			}
+		}
+	});
+}
+exports.setTrackTagData = setTrackTagData;
+
+function setTrackFetchDate(trackId) {
+	client.query("UPDATE TRACK SET tags_fetched = NOW() WHERE id = ?", [trackId], function(err, info) {
+		if(err) {console.log(err);}
+	});
+}
+exports.setTrackFetchDate = setTrackFetchDate;
